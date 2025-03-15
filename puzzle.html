@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3x3 Puzzle Game</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        .puzzle-container {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 0;
+            border: 3px solid black;
+            position: relative;
+        }
+        .puzzle-piece {
+            width: 100px;
+            height: 100px;
+            background-size: cover;
+            background-position: center;
+            border: 1px solid black;
+            cursor: grab;
+            transition: transform 0.2s;
+            position: relative;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Puzzle Game</h2>
+    <div class="puzzle-container" id="puzzleContainer"></div>
+    <button onclick="shufflePieces()">Shuffle</button>
+
+    <script>
+        const puzzleContainer = document.getElementById('puzzleContainer');
+        const imagePieces = [];
+        const imagePaths = [
+            'images/piece-0.png', 'images/piece-1.png', 'images/piece-2.png',
+            'images/piece-3.png', 'images/piece-4.png', 'images/piece-5.png',
+            'images/piece-6.png', 'images/piece-7.png', 'images/piece-8.png'
+        ];
+
+        function initializePuzzle() {
+            const shuffledIndexes = [...Array(9).keys()].sort(() => Math.random() - 0.5);
+            shuffledIndexes.forEach((index, i) => {
+                const piece = document.createElement('div');
+                piece.classList.add('puzzle-piece');
+                piece.style.backgroundImage = `url('${imagePaths[index]}')`;
+                piece.setAttribute('draggable', true);
+                piece.dataset.index = index;
+                piece.dataset.rotation = "0";
+                puzzleContainer.appendChild(piece);
+                imagePieces.push(piece);
+
+                piece.addEventListener('dragstart', (e) => {
+                    e.dataTransfer.setData('text/plain', index);
+                });
+                piece.addEventListener('dragover', (e) => {
+                    e.preventDefault();
+                });
+                piece.addEventListener('drop', (e) => {
+                    e.preventDefault();
+                    let draggedIndex = e.dataTransfer.getData('text/plain');
+                    let targetIndex = e.target.dataset.index;
+                    
+                    if (draggedIndex !== targetIndex) {
+                        let tempImage = e.target.style.backgroundImage;
+                        e.target.style.backgroundImage = imagePieces[draggedIndex].style.backgroundImage;
+                        imagePieces[draggedIndex].style.backgroundImage = tempImage;
+                    }
+                });
+
+                piece.addEventListener('click', () => {
+                    let currentRotation = parseInt(piece.dataset.rotation);
+                    currentRotation = (currentRotation + 90) % 360;
+                    piece.style.transform = `rotate(${currentRotation}deg)`;
+                    piece.dataset.rotation = currentRotation;
+                });
+            });
+        }
+
+        function shufflePieces() {
+            puzzleContainer.innerHTML = "";
+            imagePieces.length = 0;
+            initializePuzzle();
+        }
+
+        initializePuzzle();
+    </script>
+
+</body>
+</html>
